@@ -111,9 +111,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
 
     public boolean isPlaying() {
-        if (mMediaPlayer != null)
+        if (mMediaPlayer != null) {
             return mMediaPlayer.isPlaying();
-        return false;
+        } else {
+            return false;
+        }
     }
 
     public void next() {
@@ -139,7 +141,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 nextSong = songList.get(songList.size() - 1);
             }
             mMediaPlayer.reset();
-//            initMediaPlayer();
             startPlay(nextSong.getID());
             changeTrack(currentlySong);
         }
@@ -184,16 +185,18 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (stringStrong != "") {
             Gson gson = new Gson();
             currentlySong = gson.fromJson(stringStrong, Song.class);
-            publishResults(currentlySong);
+            broadcastInitService(currentlySong);
         }
     }
 
-    private void publishResults(Song song) {
+    // init service
+    private void broadcastInitService(Song song) {
         Intent intent = new Intent(OPENAPP);
         intent.putExtra(CURRENT_SONG, song);
         sendBroadcast(intent);
     }
 
+    //
     private void changeTrack(Song song) {
         Intent intent = new Intent(CHANGETRACK);
         intent.putExtra(CURRENT_SONG, song);

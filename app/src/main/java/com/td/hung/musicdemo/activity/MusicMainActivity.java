@@ -45,6 +45,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class MusicMainActivity extends AppCompatActivity implements View.OnClickListener, MusicLibaryActivity.SongClickListener, SeekBar.OnSeekBarChangeListener {
 
 
+    public static final String TAG = "mussic";
     public static final String KEY_LIST_SONG = "KEY_LIST_SONG";
 
     private ArrayList<Song> songList = new ArrayList<>();
@@ -76,6 +77,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d(TAG,"receive broadcast when init service");
                             txtSongName.setText(song.getTitle());
                             txtSongArtist.setText(song.getArtist());
                             btnPlay.setImageResource(R.drawable.ic_play_);
@@ -102,7 +104,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                             btnPlay.setImageResource(R.drawable.ic_pause);
                             circleImageView.setAnimation(rotateAnimation);
                             circleImageView.startAnimation(rotateAnimation);
-                            updateProgressBar();
+                           // updateProgressBar();
                         }
                     });
                 }
@@ -184,26 +186,22 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                 break;
             case R.id.btn_play:
                 if (isFirstOpen) {
+                    Log.d(TAG,"is first open");
                     musicService.startPlay(musicService.getCurrentlySong().getID());
                     btnPlay.setImageResource(R.drawable.ic_pause);
                     circleImageView.setAnimation(rotateAnimation);
                     circleImageView.startAnimation(rotateAnimation);
                 } else {
+                    Log.d(TAG," not first open");
                     if (localBinder.getService().isPlaying()) {
                         localBinder.getService().pause();
                         circleImageView.setAnimation(null);
                         btnPlay.setImageResource(R.drawable.ic_play_);
-                        try {
-                            threadProgress.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                     } else {
                         localBinder.getService().play();
                         circleImageView.setAnimation(rotateAnimation);
                         circleImageView.startAnimation(rotateAnimation);
                         btnPlay.setImageResource(R.drawable.ic_pause);
-                        threadProgress.notify();
                     }
                 }
                 isFirstOpen = false;
@@ -264,7 +262,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisArtist = musicCursor.getString(artistColumn);
                 String path = musicCursor.getString(data);
-                Uri uri = Uri.parse("file:///" + path);
                 songList.add(new Song(path, thisId, thisTitle, thisArtist, index));
                 index++;
             }
@@ -319,7 +316,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-//                    Log.d("mussic","current : " +i);
                     final long finalI = i;
 
                     mHandler.post(new Runnable() {
