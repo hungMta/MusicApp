@@ -28,6 +28,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public static final String CURRENT_SECCOND = "CURRENT_SECCOND";
     public static final String OPENAPP = "OPENAPP";
     public static final String CHANGETRACK = "CHANGETRACK";
+    public static final String PAUSETRACK = "PAUSETRACK";
+    public static final String PLAYTRACK = "PLAYTRACK";
     public static final String GET_DURATION = "GET_DURATION";
     public static final String GET_CURRENTPOSITITION = "GET_CURRENTPOSITITION";
     MediaPlayer mMediaPlayer = null;
@@ -67,7 +69,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         player.start();
         MusicPreference.newInstance(getApplicationContext()).putLong(GET_DURATION, mMediaPlayer.getDuration());
         MusicPreference.newInstance(getApplicationContext()).putLong(GET_CURRENTPOSITITION, mMediaPlayer.getCurrentPosition());
-        changeTrack(currentlySong);
+        broadcastChangeTrack(currentlySong);
     }
 
     @Override
@@ -98,6 +100,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (mMediaPlayer != null) {
             if (currentlySong != null) {
                 mMediaPlayer.start();
+                broadcastPlayTrack();
             }
         }
     }
@@ -106,6 +109,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         if (mMediaPlayer != null)
             if (currentlySong != null && isPlaying()) {
                 mMediaPlayer.pause();
+                broadcastPauseTrack();
             }
     }
 
@@ -128,7 +132,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
             mMediaPlayer.reset();
             startPlay(nextSong.getID());
-            changeTrack(currentlySong);
+            broadcastChangeTrack(currentlySong);
         }
     }
 
@@ -142,7 +146,13 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
             mMediaPlayer.reset();
             startPlay(nextSong.getID());
-            changeTrack(currentlySong);
+            broadcastChangeTrack(currentlySong);
+        }
+    }
+
+    public void seekToTime(int currentDuration){
+        if (mMediaPlayer != null){
+            mMediaPlayer.seekTo(currentDuration);
         }
     }
 
@@ -197,9 +207,19 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     //
-    private void changeTrack(Song song) {
+    private void broadcastChangeTrack(Song song) {
         Intent intent = new Intent(CHANGETRACK);
         intent.putExtra(CURRENT_SONG, song);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastPauseTrack(){
+        Intent intent = new Intent(PAUSETRACK);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastPlayTrack(){
+        Intent intent = new Intent(PLAYTRACK);
         sendBroadcast(intent);
     }
 

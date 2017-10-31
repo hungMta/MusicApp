@@ -65,7 +65,7 @@ public class MusicUtil {
      * @param totalDuration
      * returns current duration in milliseconds
      * */
-    public static int progressToTimer(int progress, int totalDuration) {
+    public static int progressToTimer(int progress, long totalDuration) {
         int currentDuration = 0;
         totalDuration = (int) (totalDuration / 1000);
         currentDuration = (int) ((((double)progress) / 100) * totalDuration);

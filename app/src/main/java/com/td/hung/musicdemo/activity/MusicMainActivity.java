@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,7 +25,6 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.entity.Song;
@@ -58,13 +56,17 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private TextView txtSongArtist;
     private TextView txtCurrentDuration;
     private TextView txtTotalDuration;
-
+    private Context mContext;
 
     private MusicService musicService;
     private boolean isFirstOpen;
     private CircleImageView circleImageView;
     private SeekBar seekBar;
     private Thread threadProgress;
+    private Handler mHander = new Handler();
+
+    private long totalDuration;
+    private long currentDuration;
 
     // receive broadcast when init service
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -77,7 +79,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d(TAG,"receive broadcast when init service");
+                            Log.d(TAG, "receive broadcast when init service");
                             txtSongName.setText(song.getTitle());
                             txtSongArtist.setText(song.getArtist());
                             btnPlay.setImageResource(R.drawable.ic_play_);
@@ -104,13 +106,30 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                             btnPlay.setImageResource(R.drawable.ic_pause);
                             circleImageView.setAnimation(rotateAnimation);
                             circleImageView.startAnimation(rotateAnimation);
-                           // updateProgressBar();
+                            totalDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_DURATION, 0);
+                            currentDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_CURRENTPOSITITION, 0);
+                            updateProgressBar();
                         }
                     });
                 }
             }
         }
     };
+
+    private BroadcastReceiver receiverPauseTrack = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            pauseProgressBar();
+        }
+    };
+
+    private BroadcastReceiver receiverPlayTrack = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateProgressBar();
+        }
+    };
+
     private RotateAnimation rotateAnimation;
     private Animation rotation;
     private Handler mHandler = new Handler();
@@ -119,6 +138,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_new);
+        mContext = this;
         btnNext = (ImageView) findViewById(R.id.btn_next);
         btnPrevious = (ImageView) findViewById(R.id.btn_previous);
         btnPlay = (ImageView) findViewById(R.id.btn_play);
@@ -152,18 +172,22 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         getSongList();
 
         MusicLibaryActivity.setSongClikcListener(this);
-        Log.d("mussic","milliSecondsToTimer : " +MusicUtil.instance().milliSecondsToTimer(10));
-        Log.d("mussic","milliSecondsToTimer : " +MusicUtil.instance().milliSecondsToTimer(100));
+        Log.d("mussic", "milliSecondsToTimer : " + MusicUtil.instance().milliSecondsToTimer(10));
+        Log.d("mussic", "milliSecondsToTimer : " + MusicUtil.instance().milliSecondsToTimer(100));
         initService();
+
+        totalDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_DURATION, 0);
+        currentDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_CURRENTPOSITITION, 0);
     }
+
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(receiver, new IntentFilter(
-                MusicService.OPENAPP));
-        registerReceiver(receiverChangeTrack, new IntentFilter(
-                MusicService.CHANGETRACK));
+        registerReceiver(receiver, new IntentFilter(MusicService.OPENAPP));
+        registerReceiver(receiverChangeTrack, new IntentFilter(MusicService.CHANGETRACK));
+        registerReceiver(receiverPauseTrack,new IntentFilter(MusicService.PAUSETRACK));
+        registerReceiver(receiverPlayTrack,new IntentFilter(MusicService.PLAYTRACK));
     }
 
     @Override
@@ -183,16 +207,18 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
             case R.id.btn_next:
                 musicService.next();
                 isFirstOpen = false;
+                threadProgress = null;
                 break;
             case R.id.btn_play:
                 if (isFirstOpen) {
-                    Log.d(TAG,"is first open");
+                    Log.d(TAG, "is first open");
                     musicService.startPlay(musicService.getCurrentlySong().getID());
                     btnPlay.setImageResource(R.drawable.ic_pause);
                     circleImageView.setAnimation(rotateAnimation);
                     circleImageView.startAnimation(rotateAnimation);
+
                 } else {
-                    Log.d(TAG," not first open");
+                    Log.d(TAG, " not first open");
                     if (localBinder.getService().isPlaying()) {
                         localBinder.getService().pause();
                         circleImageView.setAnimation(null);
@@ -299,73 +325,58 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         bindService(intent, serviceConnection, BIND_AUTO_CREATE);
     }
 
-
-    public void updateProgressBar() {
-        final long totalDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_DURATION, 0);
-        long currentDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_CURRENTPOSITITION, 0);
-        Log.d("mussic","totalDuration : " +totalDuration);
-        Log.d("mussic","current : " +currentDuration);
-        threadProgress = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (long i = 0; i < totalDuration; i++) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    final long finalI = i;
-
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d("mussic","current : " +finalI);
-                            Log.d("mussic","milliSecondsToTimer : " +MusicUtil.instance().milliSecondsToTimer(finalI));
-                            txtCurrentDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(finalI));
-                            int progress = (int) (MusicUtil.instance().getProgressPercentage(finalI, totalDuration));
-                            seekBar.setProgress(progress);
-                        }
-                    });
-                }
-            }
-        });
-        threadProgress.start();
-    }
-
     /**
-     * Background Runnable thread
+     * background thread update Time
      */
+
+    private boolean stopTimeTask;
     private Runnable mUpdateTimeTask = new Runnable() {
+        @Override
         public void run() {
-            long totalDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_DURATION, 0);
-            long currentDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_CURRENTPOSITITION, 0);
-
-            // Displaying Total Duration time
-            txtTotalDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(totalDuration));
-            // Displaying time completed playing
-            txtCurrentDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(currentDuration));
-
-            // Updating progress bar
-            int progress = (int) (MusicUtil.instance().getProgressPercentage(currentDuration, totalDuration));
-            seekBar.setProgress(progress);
-            Toast.makeText(getApplicationContext(), "update time", Toast.LENGTH_SHORT);
+                Log.d(TAG,"mUpdateTimeTask : " + currentDuration);
+                txtCurrentDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(currentDuration / 1000));
+                seekBar.setProgress(MusicUtil.instance().getProgressPercentage(currentDuration,totalDuration));
+                currentDuration += 1000;
+                if (!stopTimeTask)
+                    mHandler.postDelayed(this, 1000);
         }
     };
 
+    public void updateProgressBar() {
+        txtTotalDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(totalDuration / 1000));
+        stopTimeTask = false;
+        mHander.postDelayed(mUpdateTimeTask, 100);
+    }
 
-    // seek bar
+    private void pauseProgressBar() {
+        stopTimeTask = true;
+        mHander.removeCallbacks(mUpdateTimeTask);
+//        mHander.removeMessages(0);
+    }
+
+
+    /**
+     * seekbar
+     *
+     * @param seekBar
+     * @param progress
+     * @param fromUser
+     */
+
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+        Log.d(TAG," seekbar onProgressChanged");
     }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-
+        Log.d(TAG," seekbar onStartTrackingTouch");
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
+        Log.d(TAG," seekbar onStopTrackingTouch");
+        currentDuration = MusicUtil.instance().progressToTimer(seekBar.getProgress(),totalDuration);
+        musicService.seekToTime((int)currentDuration);
     }
 }
