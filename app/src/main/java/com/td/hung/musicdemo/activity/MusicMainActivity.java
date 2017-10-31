@@ -301,8 +301,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
 
     public void updateProgressBar() {
-////        new Thread(mUpdateTimeTask).s;
-////        mHandler.postDelayed(mUpdateTimeTask, 100);
         final long totalDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_DURATION, 0);
         long currentDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_CURRENTPOSITITION, 0);
         Log.d("mussic","totalDuration : " +totalDuration);
@@ -349,11 +347,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
             // Updating progress bar
             int progress = (int) (MusicUtil.instance().getProgressPercentage(currentDuration, totalDuration));
-            //Log.d("Progress", ""+progress);
             seekBar.setProgress(progress);
-
-//            // Running this thread after 100 milliseconds
-//            mHandler.postDelayed(this, 100);
             Toast.makeText(getApplicationContext(), "update time", Toast.LENGTH_SHORT);
         }
     };
