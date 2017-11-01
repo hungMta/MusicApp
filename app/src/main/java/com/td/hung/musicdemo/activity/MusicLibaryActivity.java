@@ -77,7 +77,7 @@ public class MusicLibaryActivity extends AppCompatActivity implements SongAdapte
 //            stopService(new Intent(this,MusicService.class));
 //        }
 //        Intent intent = new Intent(this, MusicService.class);
-//        intent.putExtra("uri",song.getUri());
+//        intent.putExtra("uri",item_song_recycler.getUri());
 //        startService(intent);
     }
 

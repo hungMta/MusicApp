@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -28,9 +29,11 @@ import android.widget.TextView;
 
 import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.entity.Song;
+import com.td.hung.musicdemo.recyclerview.SongListRecyclerViewAdapter;
 import com.td.hung.musicdemo.service.MusicService;
 import com.td.hung.musicdemo.util.MusicPreference;
 import com.td.hung.musicdemo.util.MusicUtil;
+import com.td.hung.musicdemo.viewpager.MusicViewPagerAdapter;
 
 import java.util.ArrayList;
 
@@ -40,7 +43,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by PC on 15/10/2017.
  */
 
-public class MusicMainActivity extends AppCompatActivity implements View.OnClickListener, MusicLibaryActivity.SongClickListener, SeekBar.OnSeekBarChangeListener {
+public class MusicMainActivity extends AppCompatActivity implements View.OnClickListener,  SeekBar.OnSeekBarChangeListener, SongListRecyclerViewAdapter.OnItemSongClickListener {
 
 
     public static final String TAG = "mussic";
@@ -67,6 +70,10 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
     private long totalDuration;
     private long currentDuration;
+
+    private MusicViewPagerAdapter musicViewPagerAdapter;
+    private ViewPager viewPager;
+
 
     // receive broadcast when init service
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -153,6 +160,8 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
 
+        viewPager = (ViewPager) findViewById(R.id.music_view_pager);
+
         rotation = AnimationUtils.loadAnimation(this, R.anim.spin_around);
         rotateAnimation = new RotateAnimation(0, 360f,
                 Animation.RELATIVE_TO_SELF, 0.5f,
@@ -169,15 +178,18 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         btnMenu.setOnClickListener(this);
         seekBar.setOnSeekBarChangeListener(this);
 
+        SongListRecyclerViewAdapter.setOnItemSongClickListener(this);
+
         getSongList();
 
-        MusicLibaryActivity.setSongClikcListener(this);
         Log.d("mussic", "milliSecondsToTimer : " + MusicUtil.instance().milliSecondsToTimer(10));
         Log.d("mussic", "milliSecondsToTimer : " + MusicUtil.instance().milliSecondsToTimer(100));
         initService();
 
         totalDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_DURATION, 0);
         currentDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_CURRENTPOSITITION, 0);
+
+        initViewPager();
     }
 
 
@@ -201,7 +213,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_menu:
-                openSongList();
                 isFirstOpen = false;
                 break;
             case R.id.btn_next:
@@ -240,10 +251,26 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
-    private void openSongList() {
-        Intent intent = new Intent(this, MusicLibaryActivity.class);
-        intent.putExtra(KEY_LIST_SONG, songList);
-        startActivity(intent);
+
+    private void initViewPager(){
+        musicViewPagerAdapter = new MusicViewPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(musicViewPagerAdapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     private MusicService.LocalBinder localBinder;
@@ -306,18 +333,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         return false;
     }
 
-    @Override
-    public void songClick(final Song song) {
-
-        if (!isMyServiceRunning(MusicService.class)) {
-            Intent intent = new Intent(this, MusicService.class);
-            intent.putExtra("uri", song.getUri());
-            bindService(intent, serviceConnection, BIND_AUTO_CREATE);
-        } else {
-            musicService.startPlay(song.getID());
-        }
-
-    }
 
     private void initService() {
         Intent intent = new Intent(this, MusicService.class);
@@ -351,7 +366,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private void pauseProgressBar() {
         stopTimeTask = true;
         mHander.removeCallbacks(mUpdateTimeTask);
-//        mHander.removeMessages(0);
     }
 
 
@@ -378,5 +392,17 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         Log.d(TAG," seekbar onStopTrackingTouch");
         currentDuration = MusicUtil.instance().progressToTimer(seekBar.getProgress(),totalDuration);
         musicService.seekToTime((int)currentDuration);
+    }
+
+    @Override
+    public void itemSongClicked(Song song) {
+        if (!isMyServiceRunning(MusicService.class)) {
+            Intent intent = new Intent(this, MusicService.class);
+            intent.putExtra("uri", song.getUri());
+            bindService(intent, serviceConnection, BIND_AUTO_CREATE);
+        } else {
+            musicService.startPlay(song.getID());
+        }
+
     }
 }

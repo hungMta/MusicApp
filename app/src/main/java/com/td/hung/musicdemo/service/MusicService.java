@@ -89,7 +89,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(currentlySong.getUri().toString()));
                     mMediaPlayer.prepareAsync();
                 } catch (IOException e) {
-                    Toast.makeText(getApplicationContext(), "Couldn't play this song", Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(), "Couldn't play this item_song_recycler", Toast.LENGTH_SHORT);
                     e.printStackTrace();
                 }
             }

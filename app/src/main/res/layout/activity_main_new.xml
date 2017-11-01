@@ -9,13 +9,22 @@
         android:id="@+id/toolbar"
         layout="@layout/toolbar_playing_layout" />
 
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/music_view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/layout_func"
+        android:layout_below="@+id/toolbar"></android.support.v4.view.ViewPager>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/layout_func"
         android:layout_below="@+id/toolbar"
         android:background="@color/colorPrimary"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="gone">
 
         <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/cursh_image"
@@ -70,8 +79,7 @@
                 android:id="@+id/seekBar"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="7"
-                />
+                android:layout_weight="7" />
 
             <TextView
                 android:id="@+id/txt_total"

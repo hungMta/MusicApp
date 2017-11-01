@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -45,8 +44,8 @@ public class SongAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        //map to song layout
-        RelativeLayout songLay = (RelativeLayout) songInf.inflate(R.layout.song, parent, false);
+        //map to item_song_recycler layout
+        RelativeLayout songLay = (RelativeLayout) songInf.inflate(R.layout.item_song_recycler, parent, false);
         songLay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,7 +56,7 @@ public class SongAdapter extends BaseAdapter {
         TextView songView = (TextView)songLay.findViewById(R.id.song_title);
         TextView artistView = (TextView)songLay.findViewById(R.id.song_artist);
         TextView stt = (TextView)songLay.findViewById(R.id.song_stt);
-        //get song using position
+        //get item_song_recycler using position
         Song currSong = songs.get(position);
         //get title and artist strings
         songView.setText(currSong.getTitle());
