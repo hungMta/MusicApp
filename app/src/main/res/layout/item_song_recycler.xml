@@ -1,46 +1,60 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/item_song"
     android:layout_width="fill_parent"
-    android:layout_height="80dp"
+    android:layout_height="wrap_content"
     android:background="@color/colorPrimary"
     android:paddingRight="5dp"
     android:paddingLeft="5dp"
     android:paddingTop="5dp">
 
-    <TextView
-        android:id="@+id/song_stt"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:gravity="center"
-        android:text="1"
-        android:textColor="#fafafa"
-        android:textSize="16sp" />
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/song_stt"
-        android:orientation="vertical">
-
+        android:layout_height="57dp"
+        android:background="@color/colorPrimary">
         <TextView
-            android:layout_marginTop="5dp"
-            android:id="@+id/song_title"
-            android:layout_width="fill_parent"
+            android:id="@+id/song_stt"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:text="7 yeaers"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="1"
             android:textColor="#fafafa"
-            android:textSize="15sp" />
+            android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/song_artist"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="hhhaha"
-            android:layout_marginTop="2dp"
-            android:textColor="#d1d0d0"
-            android:textSize="12sp" />
-    </LinearLayout>
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/song_stt"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_marginTop="5dp"
+                android:id="@+id/song_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingRight="50dp"
+                android:text="7 yeaerssssssssssssssssssssssssssssssssssssss"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textColor="#fafafa"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/song_artist"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="hhhaha"
+                android:layout_marginTop="2dp"
+                android:textColor="#d1d0d0"
+                android:maxLines="1"
+                android:paddingRight="50dp"
+                android:ellipsize="end"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
 
 </RelativeLayout>

@@ -43,7 +43,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by PC on 15/10/2017.
  */
 
-public class MusicMainActivity extends AppCompatActivity implements View.OnClickListener,  SeekBar.OnSeekBarChangeListener, SongListRecyclerViewAdapter.OnItemSongClickListener {
+public class MusicMainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, SongListRecyclerViewAdapter.OnItemSongClickListener {
 
 
     public static final String TAG = "mussic";
@@ -73,7 +73,10 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
     private MusicViewPagerAdapter musicViewPagerAdapter;
     private ViewPager viewPager;
-
+    private static OnButtonPlayClickListener onButtonPlayClickListener;
+    private ImageView imgDotOne;
+    private ImageView imgDotTwo;
+    private ImageView imgDotThree;
 
     // receive broadcast when init service
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -150,6 +153,9 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         btnPrevious = (ImageView) findViewById(R.id.btn_previous);
         btnPlay = (ImageView) findViewById(R.id.btn_play);
         btnMenu = (ImageView) findViewById(R.id.btn_menu);
+        imgDotOne = (ImageView) findViewById(R.id.img_dot_one);
+        imgDotThree = (ImageView) findViewById(R.id.img_dot_three);
+        imgDotTwo = (ImageView) findViewById(R.id.img_dot_two);
 
         txtSongArtist = (TextView) findViewById(R.id.txt_song_artist);
         txtSongName = (TextView) findViewById(R.id.txt_song_name);
@@ -179,16 +185,10 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         seekBar.setOnSeekBarChangeListener(this);
 
         SongListRecyclerViewAdapter.setOnItemSongClickListener(this);
-
         getSongList();
-
-        Log.d("mussic", "milliSecondsToTimer : " + MusicUtil.instance().milliSecondsToTimer(10));
-        Log.d("mussic", "milliSecondsToTimer : " + MusicUtil.instance().milliSecondsToTimer(100));
         initService();
-
         totalDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_DURATION, 0);
         currentDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_CURRENTPOSITITION, 0);
-
         initViewPager();
     }
 
@@ -198,8 +198,8 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         super.onResume();
         registerReceiver(receiver, new IntentFilter(MusicService.OPENAPP));
         registerReceiver(receiverChangeTrack, new IntentFilter(MusicService.CHANGETRACK));
-        registerReceiver(receiverPauseTrack,new IntentFilter(MusicService.PAUSETRACK));
-        registerReceiver(receiverPlayTrack,new IntentFilter(MusicService.PLAYTRACK));
+        registerReceiver(receiverPauseTrack, new IntentFilter(MusicService.PAUSETRACK));
+        registerReceiver(receiverPlayTrack, new IntentFilter(MusicService.PLAYTRACK));
     }
 
     @Override
@@ -207,6 +207,8 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         super.onDestroy();
         unregisterReceiver(receiver);
         unregisterReceiver(receiverChangeTrack);
+        unregisterReceiver(receiverPlayTrack);
+        unregisterReceiver(receiverPauseTrack);
     }
 
     @Override
@@ -227,18 +229,20 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                     btnPlay.setImageResource(R.drawable.ic_pause);
                     circleImageView.setAnimation(rotateAnimation);
                     circleImageView.startAnimation(rotateAnimation);
-
+                    onButtonPlayClickListener.pause();
                 } else {
                     Log.d(TAG, " not first open");
                     if (localBinder.getService().isPlaying()) {
                         localBinder.getService().pause();
                         circleImageView.setAnimation(null);
                         btnPlay.setImageResource(R.drawable.ic_play_);
+                        onButtonPlayClickListener.pause();
                     } else {
                         localBinder.getService().play();
                         circleImageView.setAnimation(rotateAnimation);
                         circleImageView.startAnimation(rotateAnimation);
                         btnPlay.setImageResource(R.drawable.ic_pause);
+                        onButtonPlayClickListener.play();
                     }
                 }
                 isFirstOpen = false;
@@ -252,9 +256,10 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     }
 
 
-    private void initViewPager(){
+    private void initViewPager() {
         musicViewPagerAdapter = new MusicViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(musicViewPagerAdapter);
+        viewPager.setCurrentItem(1);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -263,7 +268,23 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
             @Override
             public void onPageSelected(int position) {
-
+                switch (position){
+                    case 0:
+                        imgDotOne.setImageResource(R.drawable.ic_dot_active);
+                        imgDotTwo.setImageResource(R.drawable.ic_dot_none_active);
+                        imgDotThree.setImageResource(R.drawable.ic_dot_none_active);
+                        break;
+                    case 1:
+                        imgDotOne.setImageResource(R.drawable.ic_dot_none_active);
+                        imgDotTwo.setImageResource(R.drawable.ic_dot_active);
+                        imgDotThree.setImageResource(R.drawable.ic_dot_none_active);
+                        break;
+                    case 2:
+                        imgDotOne.setImageResource(R.drawable.ic_dot_none_active);
+                        imgDotTwo.setImageResource(R.drawable.ic_dot_none_active);
+                        imgDotThree.setImageResource(R.drawable.ic_dot_active);
+                        break;
+                }
             }
 
             @Override
@@ -348,12 +369,12 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private Runnable mUpdateTimeTask = new Runnable() {
         @Override
         public void run() {
-                Log.d(TAG,"mUpdateTimeTask : " + currentDuration);
-                txtCurrentDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(currentDuration / 1000));
-                seekBar.setProgress(MusicUtil.instance().getProgressPercentage(currentDuration,totalDuration));
-                currentDuration += 1000;
-                if (!stopTimeTask)
-                    mHandler.postDelayed(this, 1000);
+            Log.d(TAG, "mUpdateTimeTask : " + currentDuration);
+            txtCurrentDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(currentDuration / 1000));
+            seekBar.setProgress(MusicUtil.instance().getProgressPercentage(currentDuration, totalDuration));
+            currentDuration += 1000;
+            if (!stopTimeTask)
+                mHandler.postDelayed(this, 1000);
         }
     };
 
@@ -379,19 +400,19 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        Log.d(TAG," seekbar onProgressChanged");
+        Log.d(TAG, " seekbar onProgressChanged");
     }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-        Log.d(TAG," seekbar onStartTrackingTouch");
+        Log.d(TAG, " seekbar onStartTrackingTouch");
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        Log.d(TAG," seekbar onStopTrackingTouch");
-        currentDuration = MusicUtil.instance().progressToTimer(seekBar.getProgress(),totalDuration);
-        musicService.seekToTime((int)currentDuration);
+        Log.d(TAG, " seekbar onStopTrackingTouch");
+        currentDuration = MusicUtil.instance().progressToTimer(seekBar.getProgress(), totalDuration);
+        musicService.seekToTime((int) currentDuration);
     }
 
     @Override
@@ -403,6 +424,14 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         } else {
             musicService.startPlay(song.getID());
         }
+    }
 
+    public interface OnButtonPlayClickListener {
+        void play();
+        void pause();
+    }
+
+    public static void setOnButtonPlayClickListener(OnButtonPlayClickListener listener){
+        onButtonPlayClickListener = listener;
     }
 }
