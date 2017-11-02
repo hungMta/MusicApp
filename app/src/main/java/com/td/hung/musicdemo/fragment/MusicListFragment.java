@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.entity.Song;
 import com.td.hung.musicdemo.recyclerview.SongListRecyclerViewAdapter;
+import com.td.hung.musicdemo.util.MusicUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,36 +81,13 @@ public class MusicListFragment extends Fragment implements SongListRecyclerViewA
     }
 
     private void getSongList() {
-        ContentResolver musicResolver = mContext.getContentResolver();
-        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-            musicCursor.getNotificationUri();
-            //get columns
-            int titleColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media._ID);
-            int artistColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.ARTIST);
-            int data = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-
-            //add songs to list
-            int index = 0;
-            do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                String path = musicCursor.getString(data);
-                Uri uri = Uri.parse("file:///" + path);
-                if (songList.size() < 30) {
-                    songList.add(new Song(path, thisId, thisTitle, thisArtist, index));
-                }
-                allSong.add(new Song(path, thisId, thisTitle, thisArtist, index));
-                index++;
+        allSong = MusicUtil.instance().getSongList(mContext);
+        for (int i = 0 ; i < 30 ; i ++){
+            if (i < allSong.size()){
+                songList.add(allSong.get(i));
+            }else {
+                break;
             }
-            while (musicCursor.moveToNext());
         }
     }
 
@@ -129,7 +107,7 @@ public class MusicListFragment extends Fragment implements SongListRecyclerViewA
                     if (i < allSong.size()) {
                         songList.add(allSong.get(i));
                         songListRecyclerViewAdapter.notifyItemInserted(songList.size());
-                    }else {
+                    } else {
                         break;
                     }
                 }

@@ -1,5 +1,16 @@
 package com.td.hung.musicdemo.util;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
+
+import com.td.hung.musicdemo.entity.Song;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by PC on 15/10/2017.
  */
@@ -73,5 +84,39 @@ public class MusicUtil {
         // return current duration in milliseconds
         return currentDuration * 1000;
     }
+
+    public static ArrayList<Song> getSongList(Context mContext) {
+        ArrayList<Song> allSong = new ArrayList<>();
+        ContentResolver musicResolver = mContext.getContentResolver();
+        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+
+        if (musicCursor != null && musicCursor.moveToFirst()) {
+            musicCursor.getNotificationUri();
+            //get columns
+            int titleColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.TITLE);
+            int idColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media._ID);
+            int artistColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.ARTIST);
+            int data = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+
+            //add songs to list
+            int index = 0;
+            do {
+                long thisId = musicCursor.getLong(idColumn);
+                String thisTitle = musicCursor.getString(titleColumn);
+                String thisArtist = musicCursor.getString(artistColumn);
+                String path = musicCursor.getString(data);
+                Uri uri = Uri.parse("file:///" + path);
+                allSong.add(new Song(path, thisId, thisTitle, thisArtist, index));
+                index++;
+            }
+            while (musicCursor.moveToNext());
+        }
+        return allSong;
+    }
+
 
 }

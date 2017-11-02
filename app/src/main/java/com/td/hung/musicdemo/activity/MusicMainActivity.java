@@ -65,7 +65,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private boolean isFirstOpen;
     private CircleImageView circleImageView;
     private SeekBar seekBar;
-    private Thread threadProgress;
     private Handler mHander = new Handler();
 
     private long totalDuration;
@@ -118,6 +117,10 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                             circleImageView.startAnimation(rotateAnimation);
                             totalDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_DURATION, 0);
                             currentDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_CURRENTPOSITITION, 0);
+
+                            stopTimeTask = true;
+                            mHander.removeCallbacks(mUpdateTimeTask);
+                            mHander = new Handler();
                             updateProgressBar();
                         }
                     });
@@ -177,7 +180,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         rotateAnimation.setDuration(4000);
         rotateAnimation.setRepeatCount(Animation.INFINITE);
 
-
         btnNext.setOnClickListener(this);
         btnPlay.setOnClickListener(this);
         btnPrevious.setOnClickListener(this);
@@ -185,11 +187,11 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         seekBar.setOnSeekBarChangeListener(this);
 
         SongListRecyclerViewAdapter.setOnItemSongClickListener(this);
-        getSongList();
         initService();
+        initViewPager();
         totalDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_DURATION, 0);
         currentDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_CURRENTPOSITITION, 0);
-        initViewPager();
+
     }
 
 
@@ -220,7 +222,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
             case R.id.btn_next:
                 musicService.next();
                 isFirstOpen = false;
-                threadProgress = null;
                 break;
             case R.id.btn_play:
                 if (isFirstOpen) {
@@ -229,7 +230,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                     btnPlay.setImageResource(R.drawable.ic_pause);
                     circleImageView.setAnimation(rotateAnimation);
                     circleImageView.startAnimation(rotateAnimation);
-                    onButtonPlayClickListener.pause();
+                    onButtonPlayClickListener.play();
                 } else {
                     Log.d(TAG, " not first open");
                     if (localBinder.getService().isPlaying()) {
@@ -313,35 +314,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         }
     };
 
-    public void getSongList() {
-        ContentResolver musicResolver = getContentResolver();
-        Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-            musicCursor.getNotificationUri();
-            //get columns
-            int titleColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media._ID);
-            int artistColumn = musicCursor.getColumnIndex
-                    (android.provider.MediaStore.Audio.Media.ARTIST);
-            int data = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-
-            //add songs to list
-            int index = 0;
-            do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                String path = musicCursor.getString(data);
-                songList.add(new Song(path, thisId, thisTitle, thisArtist, index));
-                index++;
-            }
-            while (musicCursor.moveToNext());
-        }
-    }
 
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -357,7 +329,8 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
     private void initService() {
         Intent intent = new Intent(this, MusicService.class);
-        intent.putExtra(KEY_LIST_SONG, songList);
+        songList = MusicUtil.instance().getSongList(mContext);
+        intent.putExtra(KEY_LIST_SONG,songList);
         bindService(intent, serviceConnection, BIND_AUTO_CREATE);
     }
 
@@ -372,6 +345,9 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
             Log.d(TAG, "mUpdateTimeTask : " + currentDuration);
             txtCurrentDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(currentDuration / 1000));
             seekBar.setProgress(MusicUtil.instance().getProgressPercentage(currentDuration, totalDuration));
+            if (currentDuration >= totalDuration){
+                stopTimeTask = true;
+            }
             currentDuration += 1000;
             if (!stopTimeTask)
                 mHandler.postDelayed(this, 1000);

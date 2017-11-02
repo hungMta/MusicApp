@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -22,9 +23,10 @@ import java.util.ArrayList;
  * Created by PC on 15/10/2017.
  */
 
-public class MusicService extends Service implements MediaPlayer.OnPreparedListener, AudioManager.OnAudioFocusChangeListener {
+public class MusicService extends Service implements MediaPlayer.OnPreparedListener, AudioManager.OnAudioFocusChangeListener, MediaPlayer.OnCompletionListener {
     public static final String ACTION_PLAY = "com.example.action.PLAY";
     public static final String CURRENT_SONG = "CURRENT_SONG";
+    public static final String TAG = "music_service";
     public static final String CURRENT_SECCOND = "CURRENT_SECCOND";
     public static final String OPENAPP = "OPENAPP";
     public static final String CHANGETRACK = "CHANGETRACK";
@@ -73,10 +75,45 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     @Override
+    public void onCompletion(MediaPlayer mp) {
+        Log.d(TAG,"onCompletion");
+        int index = getIndexSongById();
+        if (index != -1){
+            if (index < songList.size()){
+                startPlay(songList.get(index+1));
+            }
+        }
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         mMediaPlayer.release();
 
+    }
+
+    private void initMediaPlayer() {
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mMediaPlayer.setOnPreparedListener(this);
+        mMediaPlayer.setOnCompletionListener(this);
+    }
+
+    public void startPlay(Song song){
+        if (mMediaPlayer != null) {
+            currentlySong = song;
+            if (currentlySong != null) {
+                try {
+                    MusicPreference.newInstance(getApplicationContext()).putString(CURRENT_SONG, currentlySong.toString());
+                    mMediaPlayer.reset();
+                    mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(currentlySong.getUri().toString()));
+                    mMediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    Toast.makeText(getApplicationContext(), "Couldn't play this item_song_recycler", Toast.LENGTH_SHORT);
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public void startPlay(long songID) {
@@ -132,7 +169,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
             mMediaPlayer.reset();
             startPlay(nextSong.getID());
-            broadcastChangeTrack(currentlySong);
         }
     }
 
@@ -146,7 +182,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             }
             mMediaPlayer.reset();
             startPlay(nextSong.getID());
-            broadcastChangeTrack(currentlySong);
         }
     }
 
@@ -156,11 +191,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     }
 
-    private void initMediaPlayer() {
-        mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mMediaPlayer.setOnPreparedListener(this);
-    }
+
 
     public void stop() {
         if (mMediaPlayer != null) {
@@ -175,6 +206,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         return currentlySong;
     }
 
+
+
     public class LocalBinder extends Binder {
         public MusicService getService() {
             return MusicService.this;
@@ -187,6 +220,15 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 return song;
         }
         return null;
+    }
+
+    private int getIndexSongById(){
+        for (int i = 0; i < songList.size(); i ++){
+            if (currentlySong.getID() == songList.get(i).getID()){
+                return i;
+            }
+        }
+        return -1;
     }
 
 
