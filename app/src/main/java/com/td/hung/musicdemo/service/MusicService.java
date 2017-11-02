@@ -76,11 +76,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        Log.d(TAG,"onCompletion");
+        Log.d(TAG, "onCompletion");
         int index = getIndexSongById();
-        if (index != -1){
-            if (index < songList.size()){
-                startPlay(songList.get(index+1));
+        if (index != -1) {
+            if (index < songList.size()) {
+                startPlay(songList.get(index + 1));
             }
         }
     }
@@ -99,7 +99,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         mMediaPlayer.setOnCompletionListener(this);
     }
 
-    public void startPlay(Song song){
+    public void startPlay(Song song) {
         if (mMediaPlayer != null) {
             currentlySong = song;
             if (currentlySong != null) {
@@ -162,13 +162,17 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void next() {
         if (mMediaPlayer != null) {
             Song nextSong;
-            if (currentlySong.getIndex() < songList.size()) {
-                nextSong = songList.get(currentlySong.getIndex() + 1);
+            if (!MusicPreference.newInstance(getApplicationContext()).getBoolean(MusicMainActivity.SUFFLE, false)) {
+                if (currentlySong.getIndex() < songList.size()) {
+                    nextSong = songList.get(currentlySong.getIndex() + 1);
+                } else {
+                    nextSong = songList.get(0);
+                }
+                mMediaPlayer.reset();
+                startPlay(nextSong.getID());
             } else {
-                nextSong = songList.get(0);
+                
             }
-            mMediaPlayer.reset();
-            startPlay(nextSong.getID());
         }
     }
 
@@ -185,12 +189,11 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         }
     }
 
-    public void seekToTime(int currentDuration){
-        if (mMediaPlayer != null){
+    public void seekToTime(int currentDuration) {
+        if (mMediaPlayer != null) {
             mMediaPlayer.seekTo(currentDuration);
         }
     }
-
 
 
     public void stop() {
@@ -207,7 +210,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     }
 
 
-
     public class LocalBinder extends Binder {
         public MusicService getService() {
             return MusicService.this;
@@ -222,9 +224,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         return null;
     }
 
-    private int getIndexSongById(){
-        for (int i = 0; i < songList.size(); i ++){
-            if (currentlySong.getID() == songList.get(i).getID()){
+    private int getIndexSongById() {
+        for (int i = 0; i < songList.size(); i++) {
+            if (currentlySong.getID() == songList.get(i).getID()) {
                 return i;
             }
         }
@@ -255,12 +257,12 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         sendBroadcast(intent);
     }
 
-    private void broadcastPauseTrack(){
+    private void broadcastPauseTrack() {
         Intent intent = new Intent(PAUSETRACK);
         sendBroadcast(intent);
     }
 
-    private void broadcastPlayTrack(){
+    private void broadcastPlayTrack() {
         Intent intent = new Intent(PLAYTRACK);
         sendBroadcast(intent);
     }

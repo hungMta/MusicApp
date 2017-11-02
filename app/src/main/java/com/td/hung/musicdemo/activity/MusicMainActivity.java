@@ -3,17 +3,13 @@ package com.td.hung.musicdemo.activity;
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -48,6 +44,13 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
     public static final String TAG = "mussic";
     public static final String KEY_LIST_SONG = "KEY_LIST_SONG";
+    /**
+     * 0 : none
+     * 1 : repeat current song
+     * 2 : repeat song list
+     */
+    public static final String REPEAT_SONG = "REPEAT_SONG";
+    public static final String SUFFLE = "SUFFLE";
 
     private ArrayList<Song> songList = new ArrayList<>();
     private ImageView btnPrevious;
@@ -76,6 +79,8 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private ImageView imgDotOne;
     private ImageView imgDotTwo;
     private ImageView imgDotThree;
+    private ImageView btnSuffle;
+    private ImageView btnRepeat;
 
     // receive broadcast when init service
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -155,6 +160,9 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         imgDotOne = (ImageView) findViewById(R.id.img_dot_one);
         imgDotThree = (ImageView) findViewById(R.id.img_dot_three);
         imgDotTwo = (ImageView) findViewById(R.id.img_dot_two);
+        btnSuffle = (ImageView) findViewById(R.id.btn_suffle);
+        btnRepeat = (ImageView) findViewById(R.id.btn_repeat);
+
 
         txtSongArtist = (TextView) findViewById(R.id.txt_song_artist);
         txtSongName = (TextView) findViewById(R.id.txt_song_name);
@@ -181,13 +189,15 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         btnPrevious.setOnClickListener(this);
         btnMenu.setOnClickListener(this);
         seekBar.setOnSeekBarChangeListener(this);
+        btnRepeat.setOnClickListener(this);
+        btnSuffle.setOnClickListener(this);
 
         SongListRecyclerViewAdapter.setOnItemSongClickListener(this);
         initService();
         initViewPager();
         totalDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_DURATION, 0);
         currentDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_CURRENTPOSITITION, 0);
-
+        loadUI();
     }
 
 
@@ -250,6 +260,31 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                 stopTimeTask = true;
                 isFirstOpen = false;
                 break;
+            case R.id.btn_suffle:
+                if (!MusicPreference.newInstance(mContext).getBoolean(SUFFLE,false)){
+                    MusicPreference.newInstance(mContext).putBoolean(SUFFLE,true);
+                    btnSuffle.setImageResource(R.drawable.ic_shuffle_active);
+                } else {
+                    MusicPreference.newInstance(mContext).putBoolean(SUFFLE,false);
+                    btnSuffle.setImageResource(R.drawable.ic_shuffle_none_active);
+                }
+                break;
+            case R.id.btn_repeat:
+                switch (MusicPreference.newInstance(mContext).getInt(REPEAT_SONG,0)){
+                    case 0:
+                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG,1);
+                        btnRepeat.setImageResource(R.drawable.ic_repeat_one);
+                        break;
+                    case 1:
+                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG,2);
+                        btnRepeat.setImageResource(R.drawable.ic_repeat_song_list);
+                        break;
+                    case 2:
+                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG,0);
+                        btnRepeat.setImageResource(R.drawable.ic_repeat_none);
+                        break;
+                }
+                break;
 
         }
     }
@@ -291,6 +326,24 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
             }
         });
+    }
+    private void loadUI(){
+        if (MusicPreference.newInstance(mContext).getBoolean(SUFFLE,false)){
+            btnSuffle.setImageResource(R.drawable.ic_shuffle_active);
+        } else {
+            btnSuffle.setImageResource(R.drawable.ic_shuffle_none_active);
+        }
+        switch (MusicPreference.newInstance(mContext).getInt(REPEAT_SONG,0)){
+            case 1:
+                btnRepeat.setImageResource(R.drawable.ic_repeat_one);
+                break;
+            case 2:
+                btnRepeat.setImageResource(R.drawable.ic_repeat_song_list);
+                break;
+            case 0:
+                btnRepeat.setImageResource(R.drawable.ic_repeat_none);
+                break;
+        }
     }
 
     private MusicService.LocalBinder localBinder;
