@@ -117,10 +117,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                             circleImageView.startAnimation(rotateAnimation);
                             totalDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_DURATION, 0);
                             currentDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_CURRENTPOSITITION, 0);
-
-                            stopTimeTask = true;
-                            mHander.removeCallbacks(mUpdateTimeTask);
-                            mHander = new Handler();
                             updateProgressBar();
                         }
                     });
@@ -221,6 +217,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                 break;
             case R.id.btn_next:
                 musicService.next();
+                stopTimeTask = true;
                 isFirstOpen = false;
                 break;
             case R.id.btn_play:
@@ -250,6 +247,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                 break;
             case R.id.btn_previous:
                 musicService.previous();
+                stopTimeTask = true;
                 isFirstOpen = false;
                 break;
 
