@@ -1,20 +1,20 @@
 package com.td.hung.musicdemo.fragment;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.entity.Song;
 import com.td.hung.musicdemo.recyclerview.SongListRecyclerViewAdapter;
@@ -34,6 +34,7 @@ public class MusicListFragment extends Fragment implements SongListRecyclerViewA
     private SongListRecyclerViewAdapter songListRecyclerViewAdapter;
     private List<Song> allSong = new ArrayList<>();
     private List<Song> songList = new ArrayList<>();
+
 
     public static MusicListFragment newInstance() {
         if (musicListFragment == null) {
@@ -57,6 +58,7 @@ public class MusicListFragment extends Fragment implements SongListRecyclerViewA
         initRecyclerView();
         SongListRecyclerViewAdapter.setOnLoadMoreListener(this);
     }
+
 
     @Override
     public void onAttach(Context context) {
@@ -116,4 +118,5 @@ public class MusicListFragment extends Fragment implements SongListRecyclerViewA
             }
         }, 2000);
     }
+
 }

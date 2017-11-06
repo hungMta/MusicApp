@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MusicDemo</string>
+    <string name="dialog_playlist_tiltle">Add to playlist</string>
 </resources>

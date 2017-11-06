@@ -20,10 +20,14 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.td.hung.musicdemo.R;
+import com.td.hung.musicdemo.dialog.PlayListDialog;
 import com.td.hung.musicdemo.entity.Song;
 import com.td.hung.musicdemo.recyclerview.SongListRecyclerViewAdapter;
 import com.td.hung.musicdemo.service.MusicService;
@@ -39,7 +43,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by PC on 15/10/2017.
  */
 
-public class MusicMainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, SongListRecyclerViewAdapter.OnItemSongClickListener {
+public class MusicMainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, SongListRecyclerViewAdapter.OnItemSongClickListener, SongListRecyclerViewAdapter.OnMoreVertClickListener {
 
 
     public static final String TAG = "mussic";
@@ -63,7 +67,8 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private TextView txtCurrentDuration;
     private TextView txtTotalDuration;
     private Context mContext;
-
+    private LinearLayout panelSlideLayout;
+    private SlidingUpPanelLayout slidingUpPanelLayout;
     private MusicService musicService;
     private boolean isFirstOpen;
     private CircleImageView circleImageView;
@@ -72,7 +77,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
     private long totalDuration;
     private long currentDuration;
-
+    private RelativeLayout overSlideUpLayout;
     private MusicViewPagerAdapter musicViewPagerAdapter;
     private ViewPager viewPager;
     private static OnButtonPlayClickListener onButtonPlayClickListener;
@@ -81,6 +86,13 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private ImageView imgDotThree;
     private ImageView btnSuffle;
     private ImageView btnRepeat;
+    private TextView txtSongNameSlideUp;
+    private TextView txtSongArtisSlideUp;
+
+    private LinearLayout layoutAddToPlayList;
+    private LinearLayout layoutSetAsDefaultRingTone;
+    private LinearLayout layoutDeleteSong;
+    private Song songToAdd;
 
     // receive broadcast when init service
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -162,19 +174,21 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         imgDotTwo = (ImageView) findViewById(R.id.img_dot_two);
         btnSuffle = (ImageView) findViewById(R.id.btn_suffle);
         btnRepeat = (ImageView) findViewById(R.id.btn_repeat);
-
-
+        panelSlideLayout = (LinearLayout) findViewById(R.id.panelSlide_layout);
+        slidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         txtSongArtist = (TextView) findViewById(R.id.txt_song_artist);
         txtSongName = (TextView) findViewById(R.id.txt_song_name);
         txtCurrentDuration = (TextView) findViewById(R.id.txt_current);
         txtTotalDuration = (TextView) findViewById(R.id.txt_total);
-
+        overSlideUpLayout = (RelativeLayout) findViewById(R.id.overSlideUpLayout);
         circleImageView = (CircleImageView) findViewById(R.id.cursh_image);
-
+        layoutAddToPlayList = (LinearLayout) findViewById(R.id.layout_add_to_playlist);
+        layoutSetAsDefaultRingTone = (LinearLayout) findViewById(R.id.layout_set_as_ringtone);
+        layoutDeleteSong = (LinearLayout) findViewById(R.id.layout_delete);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
-
         viewPager = (ViewPager) findViewById(R.id.music_view_pager);
-
+        txtSongNameSlideUp = (TextView) findViewById(R.id.txt_song_name_slideup);
+        txtSongArtisSlideUp = (TextView) findViewById(R.id.txt_song_artist_slideup);
         rotation = AnimationUtils.loadAnimation(this, R.anim.spin_around);
         rotateAnimation = new RotateAnimation(0, 360f,
                 Animation.RELATIVE_TO_SELF, 0.5f,
@@ -191,13 +205,17 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         seekBar.setOnSeekBarChangeListener(this);
         btnRepeat.setOnClickListener(this);
         btnSuffle.setOnClickListener(this);
-
+        layoutAddToPlayList.setOnClickListener(this);
+        layoutDeleteSong.setOnClickListener(this);
+        layoutSetAsDefaultRingTone.setOnClickListener(this);
+        SongListRecyclerViewAdapter.setOnMoreVertClickListener(this);
         SongListRecyclerViewAdapter.setOnItemSongClickListener(this);
         initService();
         initViewPager();
         totalDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_DURATION, 0);
         currentDuration = MusicPreference.newInstance(this).getLong(MusicService.GET_CURRENTPOSITITION, 0);
         loadUI();
+        initSlideUpLayout();
     }
 
 
@@ -224,6 +242,8 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         switch (v.getId()) {
             case R.id.btn_menu:
                 isFirstOpen = false;
+                PlayListDialog dialogFragment = PlayListDialog.newInstance(mContext,null);
+                dialogFragment.showDialog(getSupportFragmentManager().beginTransaction(), getSupportFragmentManager().findFragmentByTag("dialog"));
                 break;
             case R.id.btn_next:
                 musicService.next();
@@ -261,34 +281,73 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
                 isFirstOpen = false;
                 break;
             case R.id.btn_suffle:
-                if (!MusicPreference.newInstance(mContext).getBoolean(SUFFLE,false)){
-                    MusicPreference.newInstance(mContext).putBoolean(SUFFLE,true);
+                if (!MusicPreference.newInstance(mContext).getBoolean(SUFFLE, false)) {
+                    MusicPreference.newInstance(mContext).putBoolean(SUFFLE, true);
                     btnSuffle.setImageResource(R.drawable.ic_shuffle_active);
                 } else {
-                    MusicPreference.newInstance(mContext).putBoolean(SUFFLE,false);
+                    MusicPreference.newInstance(mContext).putBoolean(SUFFLE, false);
                     btnSuffle.setImageResource(R.drawable.ic_shuffle_none_active);
                 }
                 break;
             case R.id.btn_repeat:
-                switch (MusicPreference.newInstance(mContext).getInt(REPEAT_SONG,0)){
+                switch (MusicPreference.newInstance(mContext).getInt(REPEAT_SONG, 0)) {
                     case 0:
-                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG,1);
+                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG, 1);
                         btnRepeat.setImageResource(R.drawable.ic_repeat_one);
                         break;
                     case 1:
-                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG,2);
+                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG, 2);
                         btnRepeat.setImageResource(R.drawable.ic_repeat_song_list);
                         break;
                     case 2:
-                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG,0);
+                        MusicPreference.newInstance(mContext).putInt(REPEAT_SONG, 0);
                         btnRepeat.setImageResource(R.drawable.ic_repeat_none);
                         break;
                 }
+                break;
+            case R.id.layout_add_to_playlist:
+                OpenDiaglogAddPlayList();
+                break;
+            case R.id.layout_set_as_ringtone:
+                break;
+            case R.id.layout_delete:
                 break;
 
         }
     }
 
+    private void initSlideUpLayout() {
+        slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+        panelSlideLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+            }
+        });
+        overSlideUpLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+            }
+        });
+        slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+                if (slidingUpPanelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                    slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                }
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+                if (slidingUpPanelLayout.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                    slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                }
+            }
+        });
+
+    }
 
     private void initViewPager() {
         musicViewPagerAdapter = new MusicViewPagerAdapter(getSupportFragmentManager());
@@ -302,7 +361,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
 
             @Override
             public void onPageSelected(int position) {
-                switch (position){
+                switch (position) {
                     case 0:
                         imgDotOne.setImageResource(R.drawable.ic_dot_active);
                         imgDotTwo.setImageResource(R.drawable.ic_dot_none_active);
@@ -327,13 +386,14 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
             }
         });
     }
-    private void loadUI(){
-        if (MusicPreference.newInstance(mContext).getBoolean(SUFFLE,false)){
+
+    private void loadUI() {
+        if (MusicPreference.newInstance(mContext).getBoolean(SUFFLE, false)) {
             btnSuffle.setImageResource(R.drawable.ic_shuffle_active);
         } else {
             btnSuffle.setImageResource(R.drawable.ic_shuffle_none_active);
         }
-        switch (MusicPreference.newInstance(mContext).getInt(REPEAT_SONG,0)){
+        switch (MusicPreference.newInstance(mContext).getInt(REPEAT_SONG, 0)) {
             case 1:
                 btnRepeat.setImageResource(R.drawable.ic_repeat_one);
                 break;
@@ -366,7 +426,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     };
 
 
-
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -381,7 +440,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     private void initService() {
         Intent intent = new Intent(this, MusicService.class);
         songList = MusicUtil.instance().getSongList(mContext);
-        intent.putExtra(KEY_LIST_SONG,songList);
+        intent.putExtra(KEY_LIST_SONG, songList);
         bindService(intent, serviceConnection, BIND_AUTO_CREATE);
     }
 
@@ -396,7 +455,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
             Log.d(TAG, "mUpdateTimeTask : " + currentDuration);
             txtCurrentDuration.setText("" + MusicUtil.instance().milliSecondsToTimer(currentDuration / 1000));
             seekBar.setProgress(MusicUtil.instance().getProgressPercentage(currentDuration, totalDuration));
-            if (currentDuration >= totalDuration){
+            if (currentDuration >= totalDuration) {
                 stopTimeTask = true;
             }
             currentDuration += 1000;
@@ -416,6 +475,10 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         mHander.removeCallbacks(mUpdateTimeTask);
     }
 
+    private void OpenDiaglogAddPlayList(){
+        PlayListDialog dialogFragment = PlayListDialog.newInstance(mContext,songToAdd);
+        dialogFragment.showDialog(getSupportFragmentManager().beginTransaction(), getSupportFragmentManager().findFragmentByTag("dialog"));
+    }
 
     /**
      * seekbar
@@ -453,12 +516,22 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
+    @Override
+    public void onMoreVertClicked(Song song) {
+        songToAdd = song;
+        slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+        txtSongArtisSlideUp.setText(song.getArtist());
+        txtSongNameSlideUp.setText(song.getTitle());
+
+    }
+
     public interface OnButtonPlayClickListener {
         void play();
+
         void pause();
     }
 
-    public static void setOnButtonPlayClickListener(OnButtonPlayClickListener listener){
+    public static void setOnButtonPlayClickListener(OnButtonPlayClickListener listener) {
         onButtonPlayClickListener = listener;
     }
 }

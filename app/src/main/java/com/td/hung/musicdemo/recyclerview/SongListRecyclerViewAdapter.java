@@ -3,8 +3,10 @@ package com.td.hung.musicdemo.recyclerview;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -27,11 +29,13 @@ public class SongListRecyclerViewAdapter extends RecyclerView.Adapter {
     private List<Song> songList;
     private static OnItemSongClickListener onItemSongClickListener;
     private static OnLoadMoreListener onLoadMoreListener;
+    private static OnMoreVertClickListener onMoreVertClickListener;
     private boolean isLoading;
+
     public SongListRecyclerViewAdapter(Context context, List<Song> list, RecyclerView recyclerView) {
         mContext = context;
         songList = list;
-        if (recyclerView.getLayoutManager() instanceof LinearLayoutManager){
+        if (recyclerView.getLayoutManager() instanceof LinearLayoutManager) {
             final LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
             recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -39,8 +43,8 @@ public class SongListRecyclerViewAdapter extends RecyclerView.Adapter {
                     super.onScrolled(recyclerView, dx, dy);
                     totalItemCount = linearLayoutManager.getItemCount();
                     lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
-                    if (!isLoading && totalItemCount <= (lastVisibleItem + visibleThreshold)){
-                        if (onLoadMoreListener != null){
+                    if (!isLoading && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
+                        if (onLoadMoreListener != null) {
                             onLoadMoreListener.onLoadMore();
                         }
                         isLoading = true;
@@ -68,11 +72,19 @@ public class SongListRecyclerViewAdapter extends RecyclerView.Adapter {
             ((ItemSong) holder).relativeLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemSongClickListener.itemSongClicked(songList.get(position));
+                    if (onItemSongClickListener != null)
+                        onItemSongClickListener.itemSongClicked(songList.get(position));
                 }
             });
-        }else {
-            // load more
+            ((ItemSong) holder).imgMoreVert.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onMoreVertClickListener != null)
+                        onMoreVertClickListener.onMoreVertClicked(songList.get(position));
+                }
+            });
+        } else {
+
         }
     }
 
@@ -95,6 +107,7 @@ public class SongListRecyclerViewAdapter extends RecyclerView.Adapter {
         private TextView txtStt;
         private TextView txtSongName;
         private TextView txtSongArtist;
+        private ImageView imgMoreVert;
         private RelativeLayout relativeLayout;
 
         public ItemSong(View itemView) {
@@ -104,6 +117,7 @@ public class SongListRecyclerViewAdapter extends RecyclerView.Adapter {
             txtSongName = (TextView) itemView.findViewById(R.id.song_title);
             txtSongArtist = (TextView) itemView.findViewById(R.id.song_artist);
             relativeLayout = (RelativeLayout) itemView.findViewById(R.id.item_song);
+            imgMoreVert = (ImageView) itemView.findViewById(R.id.bnt_mover_vert);
         }
     }
 
@@ -122,12 +136,20 @@ public class SongListRecyclerViewAdapter extends RecyclerView.Adapter {
         onItemSongClickListener = songClick;
     }
 
-    public interface OnLoadMoreListener{
+    public interface OnLoadMoreListener {
         void onLoadMore();
     }
 
-    public static void setOnLoadMoreListener(OnLoadMoreListener listener){
+    public static void setOnLoadMoreListener(OnLoadMoreListener listener) {
         onLoadMoreListener = listener;
+    }
+
+    public interface OnMoreVertClickListener {
+        void onMoreVertClicked(Song song);
+    }
+
+    public static void setOnMoreVertClickListener(OnMoreVertClickListener listener) {
+        onMoreVertClickListener = listener;
     }
 
 }
