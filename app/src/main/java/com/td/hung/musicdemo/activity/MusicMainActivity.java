@@ -522,7 +522,6 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
         txtSongArtisSlideUp.setText(song.getArtist());
         txtSongNameSlideUp.setText(song.getTitle());
-
     }
 
     public interface OnButtonPlayClickListener {
