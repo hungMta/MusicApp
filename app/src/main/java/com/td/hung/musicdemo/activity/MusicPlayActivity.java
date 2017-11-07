@@ -73,7 +73,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     private static OnChangeTrackListener onChangeTrackListener;
     private MusicService musicService;
     private boolean isFirstOpen;
-    private CircleImageView circleImageView;
     private SeekBar seekBar;
     private Handler mHander = new Handler();
     private ImageView imgSong;
@@ -253,7 +252,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                     Log.d(TAG, " not first open");
                     if (localBinder.getService().isPlaying()) {
                         localBinder.getService().pause();
-                        circleImageView.setAnimation(null);
                         btnPlay.setImageResource(R.drawable.ic_play_);
                         onButtonPlayClickListener.pause();
                     } else {
@@ -512,7 +510,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         } else {
             musicService.startPlay(song.getID());
         }
-        if (onChangeTrackListener != null){
+        if (onChangeTrackListener != null) {
             onChangeTrackListener.ChangeImage(song.getPath());
         }
     }
@@ -539,11 +537,11 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         onButtonPlayClickListener = listener;
     }
 
-    public interface OnChangeTrackListener{
+    public interface OnChangeTrackListener {
         void ChangeImage(String path);
     }
 
-    public static void setOnChangeTrack(OnChangeTrackListener listener){
+    public static void setOnChangeTrack(OnChangeTrackListener listener) {
         onChangeTrackListener = listener;
     }
 }
