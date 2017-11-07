@@ -1,6 +1,7 @@
 package com.td.hung.musicdemo.fragment;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,7 +14,8 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 
 import com.td.hung.musicdemo.R;
-import com.td.hung.musicdemo.activity.MusicMainActivity;
+import com.td.hung.musicdemo.activity.MusicPlayActivity;
+import com.td.hung.musicdemo.util.MusicUtil;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -21,7 +23,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  * Created by Hung Tran on 01/11/2017.
  */
 
-public class MusicPlayFragment extends Fragment implements MusicMainActivity.OnButtonPlayClickListener {
+public class MusicPlayFragment extends Fragment implements MusicPlayActivity.OnButtonPlayClickListener, MusicPlayActivity.OnChangeTrackListener {
 
     private static MusicPlayFragment musicPlayFragment;
     private Context mContext;
@@ -57,7 +59,8 @@ public class MusicPlayFragment extends Fragment implements MusicMainActivity.OnB
         rotateAnimation.setInterpolator(new LinearInterpolator());
         rotateAnimation.setDuration(4000);
         rotateAnimation.setRepeatCount(Animation.INFINITE);
-        MusicMainActivity.setOnButtonPlayClickListener(this);
+        MusicPlayActivity.setOnButtonPlayClickListener(this);
+        MusicPlayActivity.setOnChangeTrack(this);
     }
 
     @Override
@@ -81,4 +84,17 @@ public class MusicPlayFragment extends Fragment implements MusicMainActivity.OnB
     public void pause() {
         circleImageView.setAnimation(null);
     }
+
+    @Override
+    public void ChangeImage(String path) {
+        Bitmap bitmap = MusicUtil.newInstance().getImageSongFromPath(mContext, path);
+        if (bitmap != null) {
+            circleImageView.setImageBitmap(bitmap);
+        } else {
+            circleImageView.setImageResource(R.drawable.crush);
+        }
+        circleImageView.setAnimation(rotateAnimation);
+        circleImageView.startAnimation(rotateAnimation);
+    }
+
 }

@@ -5,6 +5,7 @@
     android:orientation="horizontal">
 
     <LinearLayout
+        android:layout_marginBottom="15dp"
         android:id="@+id/create_playlist_layout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -17,7 +18,7 @@
             android:layout_width="60dp"
             android:layout_height="match_parent"
             android:background="@drawable/bg_img_add_playlist"
-            android:padding="8dp"
+            android:padding="11dp"
             android:src="@drawable/ic_add_circle" />
 
         <TextView

@@ -1,10 +1,9 @@
 package com.td.hung.musicdemo.entity;
 
-import android.net.Uri;
+import android.graphics.Bitmap;
 
 import com.google.gson.Gson;
 
-import java.io.FileWriter;
 import java.io.Serializable;
 
 /**
@@ -12,17 +11,18 @@ import java.io.Serializable;
  */
 
 public class Song implements Serializable {
-    private String uri;
+    private String path;
     private long id;
     private String title;
     private String artist;
     private int index;
+    
 
-    public Song(String uri, long songID, String songTitle, String songArtist, int index) {
+    public Song(String path, long songID, String songTitle, String songArtist, int index) {
         id = songID;
         title = songTitle;
         artist = songArtist;
-        this.uri = uri;
+        this.path = path;
         this.index = index;
     }
 
@@ -38,13 +38,14 @@ public class Song implements Serializable {
         return artist;
     }
 
-    public String getUri() {
-        return uri;
+    public String getPath() {
+        return path;
     }
 
     public int getIndex() {
         return index;
     }
+
 
     public String toString() {
         Gson gson = new Gson();

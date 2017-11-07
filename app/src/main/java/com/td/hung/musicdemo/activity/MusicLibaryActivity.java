@@ -26,7 +26,7 @@ public class MusicLibaryActivity extends AppCompatActivity implements SongAdapte
         setContentView(R.layout.activity_main);
 
         songView = (ListView)findViewById(R.id.song_list);
-        songList = (ArrayList<Song>) getIntent().getSerializableExtra(MusicMainActivity.KEY_LIST_SONG);
+        songList = (ArrayList<Song>) getIntent().getSerializableExtra(MusicPlayActivity.KEY_LIST_SONG);
         SongAdapter.setOnItemSongListner(this);
         Collections.sort(songList, new Comparator<Song>(){
             public int compare(Song a, Song b){
@@ -62,7 +62,7 @@ public class MusicLibaryActivity extends AppCompatActivity implements SongAdapte
                 String thisArtist = musicCursor.getString(artistColumn);
                 String path = musicCursor.getString(data);
                 Uri uri = Uri.parse("file:///"+path);
-                songList.add(new Song(path,thisId, thisTitle, thisArtist,index));
+//                songList.add(new Song(path,thisId, thisTitle, thisArtist,index));
                 index++;
             }
             while (musicCursor.moveToNext());
@@ -77,7 +77,7 @@ public class MusicLibaryActivity extends AppCompatActivity implements SongAdapte
 //            stopService(new Intent(this,MusicService.class));
 //        }
 //        Intent intent = new Intent(this, MusicService.class);
-//        intent.putExtra("uri",item_song_recycler.getUri());
+//        intent.putExtra("uri",item_song_recycler.getPath());
 //        startService(intent);
     }
 

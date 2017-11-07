@@ -12,7 +12,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.td.hung.musicdemo.activity.MusicMainActivity;
+import com.td.hung.musicdemo.activity.MusicPlayActivity;
 import com.td.hung.musicdemo.entity.Song;
 import com.td.hung.musicdemo.util.MusicPreference;
 
@@ -42,7 +42,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        songList = (ArrayList<Song>) intent.getSerializableExtra(MusicMainActivity.KEY_LIST_SONG);
+        songList = (ArrayList<Song>) intent.getSerializableExtra(MusicPlayActivity.KEY_LIST_SONG);
         initMediaPlayer();
         checkLastPlay();
         Toast.makeText(getApplicationContext(), "playing", Toast.LENGTH_SHORT);
@@ -106,7 +106,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 try {
                     MusicPreference.newInstance(getApplicationContext()).putString(CURRENT_SONG, currentlySong.toString());
                     mMediaPlayer.reset();
-                    mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(currentlySong.getUri().toString()));
+                    mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(currentlySong.getPath().toString()));
                     mMediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     Toast.makeText(getApplicationContext(), "Couldn't play this item_song_recycler", Toast.LENGTH_SHORT);
@@ -123,7 +123,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 try {
                     MusicPreference.newInstance(getApplicationContext()).putString(CURRENT_SONG, currentlySong.toString());
                     mMediaPlayer.reset();
-                    mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(currentlySong.getUri().toString()));
+                    mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(currentlySong.getPath().toString()));
                     mMediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     Toast.makeText(getApplicationContext(), "Couldn't play this item_song_recycler", Toast.LENGTH_SHORT);
@@ -162,7 +162,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public void next() {
         if (mMediaPlayer != null) {
             Song nextSong;
-            if (!MusicPreference.newInstance(getApplicationContext()).getBoolean(MusicMainActivity.SUFFLE, false)) {
+            if (!MusicPreference.newInstance(getApplicationContext()).getBoolean(MusicPlayActivity.SUFFLE, false)) {
                 if (currentlySong.getIndex() < songList.size()) {
                     nextSong = songList.get(currentlySong.getIndex() + 1);
                 } else {

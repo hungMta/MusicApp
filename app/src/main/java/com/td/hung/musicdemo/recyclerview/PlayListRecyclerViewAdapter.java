@@ -5,6 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.entity.PlayList;
@@ -42,26 +44,33 @@ public class PlayListRecyclerViewAdapter extends RecyclerView.Adapter {
         if (viewType == TYPE_ADD) {
             return new AddPlayList(View.inflate(mContext, R.layout.item_add_playlist_header, null));
         } else {
-            return new AddPlayList(View.inflate(mContext, R.layout.item_playlist_recyclerview, null));
+            return new ItemPlayList(View.inflate(mContext, R.layout.item_playlist_recyclerview, null));
         }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-        if (holder instanceof ItemPlayList){
+        if (holder instanceof ItemPlayList) {
+            ((ItemPlayList) holder).txtName.setText(myPlayList.get(position).getName());
+            if (myPlayList.get(position).getListSong() != null) {
+                ((ItemPlayList) holder).txtTotalSongs.setText(myPlayList.get(position).getListSong().size() + "");
+            } else {
+                ((ItemPlayList) holder).txtTotalSongs.setText("0");
+            }
+
             ((ItemPlayList) holder).itemPlaylistLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (itemPlaylistClickListener != null){
+                    if (itemPlaylistClickListener != null) {
                         itemPlaylistClickListener.itemPlaylistClicked(myPlayList.get(position));
                     }
                 }
             });
-        }else {
+        } else {
             ((AddPlayList) holder).createPlaylistLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (itemPlaylistClickListener != null){
+                    if (itemPlaylistClickListener != null) {
                         itemPlaylistClickListener.createNewPlaylist();
                     }
                 }
@@ -83,17 +92,22 @@ public class PlayListRecyclerViewAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private static class  ItemPlayList extends RecyclerView.ViewHolder {
-        private LinearLayout itemPlaylistLayout;
+    private static class ItemPlayList extends RecyclerView.ViewHolder {
+        private RelativeLayout itemPlaylistLayout;
+        private TextView txtTotalSongs;
+        private TextView txtName;
+
         public ItemPlayList(View itemView) {
             super(itemView);
-            itemPlaylistLayout = (LinearLayout) itemView.findViewById(R.id.item_playlist_layout);
-
+            itemPlaylistLayout = (RelativeLayout) itemView.findViewById(R.id.item_playlist_layout);
+            txtName = (TextView) itemView.findViewById(R.id.txt_name_playlist);
+            txtTotalSongs = (TextView) itemView.findViewById(R.id.txt_total_songs);
         }
     }
 
     private static class AddPlayList extends RecyclerView.ViewHolder {
         private LinearLayout createPlaylistLayout;
+
         public AddPlayList(View itemView) {
             super(itemView);
             createPlaylistLayout = (LinearLayout) itemView.findViewById(R.id.create_playlist_layout);
@@ -101,12 +115,13 @@ public class PlayListRecyclerViewAdapter extends RecyclerView.Adapter {
     }
 
 
-    public interface ItemPlaylistClickListener{
+    public interface ItemPlaylistClickListener {
         void createNewPlaylist();
+
         void itemPlaylistClicked(PlayList playList);
     }
 
-    public static void setItemPlaylistClickListener(ItemPlaylistClickListener listener){
+    public static void setItemPlaylistClickListener(ItemPlaylistClickListener listener) {
         itemPlaylistClickListener = listener;
     }
 }

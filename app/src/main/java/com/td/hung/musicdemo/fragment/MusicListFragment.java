@@ -1,20 +1,16 @@
 package com.td.hung.musicdemo.fragment;
 
 import android.content.Context;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.entity.Song;
 import com.td.hung.musicdemo.recyclerview.SongListRecyclerViewAdapter;
@@ -83,7 +79,7 @@ public class MusicListFragment extends Fragment implements SongListRecyclerViewA
     }
 
     private void getSongList() {
-        allSong = MusicUtil.instance().getSongList(mContext);
+        allSong = MusicUtil.newInstance().getSongList(mContext);
         for (int i = 0 ; i < 30 ; i ++){
             if (i < allSong.size()){
                 songList.add(allSong.get(i));

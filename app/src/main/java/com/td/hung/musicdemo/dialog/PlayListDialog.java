@@ -29,7 +29,7 @@ import java.util.List;
  * Created by Hung Tran on 02/11/2017.
  */
 
-public class PlayListDialog extends DialogFragment implements PlayListRecyclerViewAdapter.ItemPlaylistClickListener {
+public class PlayListDialog extends DialogFragment implements PlayListRecyclerViewAdapter.ItemPlaylistClickListener, NewPlayListDialog.CreateNewPlaylistListener {
 
     private static PlayListDialog playListDialog;
     private static Song song;
@@ -38,6 +38,7 @@ public class PlayListDialog extends DialogFragment implements PlayListRecyclerVi
     private PlayListRecyclerViewAdapter playListRecyclerViewAdapter;
     private FragmentTransaction fragmentTransaction;
     private static FragmentManager fragmentManager;
+    List<PlayList> playLists = new ArrayList<>();
 
     public static PlayListDialog newInstance(Context context, Song song1 , FragmentManager fragmentManager1) {
         playListDialog = new PlayListDialog();
@@ -70,6 +71,7 @@ public class PlayListDialog extends DialogFragment implements PlayListRecyclerVi
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView();
         PlayListRecyclerViewAdapter.setItemPlaylistClickListener(this);
+        NewPlayListDialog.setCreateNewPlaylistListener(this);
     }
 
     private void initRecyclerView() {
@@ -81,7 +83,6 @@ public class PlayListDialog extends DialogFragment implements PlayListRecyclerVi
     }
 
     private List<PlayList> getPlayList() {
-        List<PlayList> playLists = new ArrayList<>();
         playLists.add(null);
         if (MusicUtil.getMyPlayList(mContext) != null) {
             playLists.addAll(MusicUtil.getMyPlayList(mContext));
@@ -108,5 +109,13 @@ public class PlayListDialog extends DialogFragment implements PlayListRecyclerVi
     @Override
     public void itemPlaylistClicked(PlayList playList) {
 
+    }
+
+    @Override
+    public void CreateNewClicked(String name) {
+        PlayList playList = new PlayList();
+        playList.setName(name);
+        playLists.add(playList);
+        playListRecyclerViewAdapter.notifyDataSetChanged();
     }
 }
