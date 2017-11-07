@@ -13,8 +13,12 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 
+import com.google.gson.Gson;
 import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.activity.MusicPlayActivity;
+import com.td.hung.musicdemo.service.MusicService;
+import com.td.hung.musicdemo.entity.Song;
+import com.td.hung.musicdemo.util.MusicPreference;
 import com.td.hung.musicdemo.util.MusicUtil;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -61,6 +65,7 @@ public class MusicPlayFragment extends Fragment implements MusicPlayActivity.OnB
         rotateAnimation.setRepeatCount(Animation.INFINITE);
         MusicPlayActivity.setOnButtonPlayClickListener(this);
         MusicPlayActivity.setOnChangeTrack(this);
+        setInitImage();
     }
 
     @Override
@@ -97,4 +102,19 @@ public class MusicPlayFragment extends Fragment implements MusicPlayActivity.OnB
         circleImageView.startAnimation(rotateAnimation);
     }
 
+    private void setInitImage() {
+        String stringStrong = MusicPreference.newInstance(mContext).getString(MusicService.CURRENT_SONG, "");
+        if (stringStrong != "") {
+            Gson gson = new Gson();
+            Song currentlySong = gson.fromJson(stringStrong, Song.class);
+            Bitmap bitmap = MusicUtil.getImageSongFromPath(mContext, currentlySong.getPath());
+            if (bitmap != null) {
+                circleImageView.setImageBitmap(bitmap);
+            } else {
+                circleImageView.setImageResource(R.drawable.crush);
+            }
+        }else {
+            circleImageView.setImageResource(R.drawable.crush);
+        }
+    }
 }
