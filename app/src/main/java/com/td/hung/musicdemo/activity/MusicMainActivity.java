@@ -242,7 +242,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
         switch (v.getId()) {
             case R.id.btn_menu:
                 isFirstOpen = false;
-                PlayListDialog dialogFragment = PlayListDialog.newInstance(mContext,null);
+                PlayListDialog dialogFragment = PlayListDialog.newInstance(mContext,null,getSupportFragmentManager());
                 dialogFragment.showDialog(getSupportFragmentManager().beginTransaction(), getSupportFragmentManager().findFragmentByTag("dialog"));
                 break;
             case R.id.btn_next:
@@ -476,7 +476,7 @@ public class MusicMainActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void OpenDiaglogAddPlayList(){
-        PlayListDialog dialogFragment = PlayListDialog.newInstance(mContext,songToAdd);
+        PlayListDialog dialogFragment = PlayListDialog.newInstance(mContext,songToAdd,getSupportFragmentManager());
         dialogFragment.showDialog(getSupportFragmentManager().beginTransaction(), getSupportFragmentManager().findFragmentByTag("dialog"));
     }
 

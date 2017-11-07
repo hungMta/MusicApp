@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="250dp"
     android:layout_height="350dp"
-    android:background="@color/colorAccent"
     android:orientation="vertical"
     android:padding="10dp">
 
@@ -16,6 +15,7 @@
             android:layout_height="60dp"
             android:text="@string/dialog_playlist_tiltle"
             android:gravity="center"
+            android:textColor="@color/black"
             android:textSize="20dp"
             android:textStyle="bold"
             />

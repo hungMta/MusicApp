@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +20,7 @@ import com.td.hung.musicdemo.R;
 import com.td.hung.musicdemo.entity.PlayList;
 import com.td.hung.musicdemo.entity.Song;
 import com.td.hung.musicdemo.recyclerview.PlayListRecyclerViewAdapter;
+import com.td.hung.musicdemo.util.MusicUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,27 +29,30 @@ import java.util.List;
  * Created by Hung Tran on 02/11/2017.
  */
 
-public class PlayListDialog extends DialogFragment {
+public class PlayListDialog extends DialogFragment implements PlayListRecyclerViewAdapter.ItemPlaylistClickListener {
 
     private static PlayListDialog playListDialog;
     private static Song song;
     private static Context mContext;
     private RecyclerView recyclerView;
     private PlayListRecyclerViewAdapter playListRecyclerViewAdapter;
+    private FragmentTransaction fragmentTransaction;
+    private static FragmentManager fragmentManager;
 
-    public static PlayListDialog newInstance(Context context, Song song1) {
+    public static PlayListDialog newInstance(Context context, Song song1 , FragmentManager fragmentManager1) {
         playListDialog = new PlayListDialog();
         mContext = context;
+        fragmentManager = fragmentManager1;
         playListDialog.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
         Bundle agrs = new Bundle();
-        agrs.putSerializable("SONG",song1);
+        agrs.putSerializable("SONG", song1);
         song = song1;
         return playListDialog;
     }
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view;
         view = inflater.inflate(R.layout.dialog_playlist, container, false);
         recyclerView = (RecyclerView) view.findViewById(R.id.reycler_playlist);
@@ -55,9 +60,8 @@ public class PlayListDialog extends DialogFragment {
     }
 
 
-
     @Override
-    public void onCreate( Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
@@ -65,23 +69,29 @@ public class PlayListDialog extends DialogFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView();
+        PlayListRecyclerViewAdapter.setItemPlaylistClickListener(this);
     }
 
-    private void initRecyclerView(){
-        playListRecyclerViewAdapter = playListRecyclerViewAdapter.newInstance(mContext,song,getPlayList());
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext,LinearLayoutManager.VERTICAL,false);
+    private void initRecyclerView() {
+        playListRecyclerViewAdapter = playListRecyclerViewAdapter.newInstance(mContext, song, getPlayList());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setHasFixedSize(false);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(playListRecyclerViewAdapter);
     }
 
-    private List<PlayList> getPlayList(){
+    private List<PlayList> getPlayList() {
         List<PlayList> playLists = new ArrayList<>();
         playLists.add(null);
+        if (MusicUtil.getMyPlayList(mContext) != null) {
+            playLists.addAll(MusicUtil.getMyPlayList(mContext));
+        }
         return playLists;
     }
 
     public void showDialog(FragmentTransaction ft, Fragment prev) {
+        fragmentTransaction = ft;
+//        fragment = prev;
         if (prev != null) {
             ft.remove(prev);
         }
@@ -89,4 +99,14 @@ public class PlayListDialog extends DialogFragment {
         show(ft, "dialog");
     }
 
+    @Override
+    public void createNewPlaylist() {
+        NewPlayListDialog newPlayListDialog = NewPlayListDialog.newInstance(mContext);
+        newPlayListDialog.showDialog(fragmentManager.beginTransaction(),fragmentManager.findFragmentByTag("newdialog"));
+    }
+
+    @Override
+    public void itemPlaylistClicked(PlayList playList) {
+
+    }
 }

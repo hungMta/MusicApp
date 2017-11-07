@@ -9,7 +9,7 @@ import android.content.SharedPreferences;
 
 public class MusicPreference {
     private static final String NAME_CACHE = "MusicPreference";
-
+    public static final String MY_PLAYLIST = "MY_PLAYLIST";
     private static Context mContext;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;

@@ -6,6 +6,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.td.hung.musicdemo.entity.PlayList;
 import com.td.hung.musicdemo.entity.Song;
 
 import java.util.ArrayList;
@@ -25,7 +28,6 @@ public class MusicUtil {
         }
         return musicUtil;
     }
-
 
     public static String milliSecondsToTimer(long milliseconds){
         String finalTimerString = "";
@@ -118,5 +120,12 @@ public class MusicUtil {
         return allSong;
     }
 
+    public static List<PlayList> getMyPlayList(Context mContext){
+        List<PlayList> lists = new ArrayList<>();
+        String stringPLaylist = MusicPreference.newInstance(mContext).getString(MusicPreference.MY_PLAYLIST,"");
+        Gson gson = new Gson();
+        lists = gson.fromJson(stringPLaylist,new TypeToken<List<PlayList>>(){}.getType());
+        return lists;
+    }
 
 }
