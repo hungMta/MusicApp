@@ -79,7 +79,12 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         Log.d(TAG, "onCompletion");
         int index = getIndexSongById();
         if (index != -1) {
-            if (index < songList.size()) {
+            if (index < songList.size() - 1) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 startPlay(songList.get(index + 1));
             }
         }

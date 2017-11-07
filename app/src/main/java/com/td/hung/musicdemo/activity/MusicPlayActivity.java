@@ -16,10 +16,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -37,8 +33,6 @@ import com.td.hung.musicdemo.util.MusicUtil;
 import com.td.hung.musicdemo.viewpager.MusicViewPagerAdapter;
 
 import java.util.ArrayList;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by PC on 15/10/2017.
@@ -134,6 +128,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                             btnPlay.setImageResource(R.drawable.ic_pause);
                             totalDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_DURATION, 0);
                             currentDuration = MusicPreference.newInstance(getApplicationContext()).getLong(MusicService.GET_CURRENTPOSITITION, 0);
+                            mHander.removeCallbacks(mUpdateTimeTask);
                             updateProgressBar();
                         }
                     });
@@ -157,12 +152,11 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     };
 
 
-    private Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_new);
+        setContentView(R.layout.activity_music_play);
         mContext = this;
         btnNext = (ImageView) findViewById(R.id.btn_next);
         btnPrevious = (ImageView) findViewById(R.id.btn_previous);
@@ -447,7 +441,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             }
             currentDuration += 1000;
             if (!stopTimeTask)
-                mHandler.postDelayed(this, 1000);
+                mHander.postDelayed(this, 1000);
         }
     };
 

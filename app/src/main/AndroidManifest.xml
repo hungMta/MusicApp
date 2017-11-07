@@ -3,7 +3,8 @@
     package="com.td.hung.musicdemo">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -12,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activity.MusicPlayActivity"
+            android:name=".activity.MusicMainActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -20,7 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.MusicLibaryActivity"/>
-        <service android:name=".service.MusicService"/>
+        <activity android:name=".activity.MusicPlayActivity" />
+        <activity android:name=".activity.MusicLibaryActivity" />
+
+        <service android:name=".service.MusicService" />
     </application>
 </manifest>

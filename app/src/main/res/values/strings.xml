@@ -4,4 +4,5 @@
     <string name="create_playlist">Create playlist</string>
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
+    <string name="music_playlist">Music playlist</string>
 </resources>

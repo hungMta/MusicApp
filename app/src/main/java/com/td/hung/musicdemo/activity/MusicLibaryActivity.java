@@ -25,7 +25,7 @@ public class MusicLibaryActivity extends AppCompatActivity implements SongAdapte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        songView = (ListView)findViewById(R.id.song_list);
+        //songView = (ListView)findViewById(R.id.song_list);
         songList = (ArrayList<Song>) getIntent().getSerializableExtra(MusicPlayActivity.KEY_LIST_SONG);
         SongAdapter.setOnItemSongListner(this);
         Collections.sort(songList, new Comparator<Song>(){
