@@ -23,8 +23,8 @@ import java.util.List;
  * Created by Hung Tran on 01/11/2017.
  */
 
-public class MusicListFragment extends Fragment implements SongListRecyclerViewAdapter.OnLoadMoreListener {
-    private static MusicListFragment musicListFragment;
+public class MusicSongFragment extends Fragment implements SongListRecyclerViewAdapter.OnLoadMoreListener {
+    private static MusicSongFragment musicListFragment;
     private Context mContext;
     private RecyclerView recyclerView;
     private SongListRecyclerViewAdapter songListRecyclerViewAdapter;
@@ -32,9 +32,9 @@ public class MusicListFragment extends Fragment implements SongListRecyclerViewA
     private List<Song> songList = new ArrayList<>();
 
 
-    public static MusicListFragment newInstance() {
+    public static MusicSongFragment newInstance() {
         if (musicListFragment == null) {
-            musicListFragment = new MusicListFragment();
+            musicListFragment = new MusicSongFragment();
         }
         return musicListFragment;
     }

@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activity.MusicMainActivity"
+            android:name=".activity.MusicPlayActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -21,7 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.MusicPlayActivity" />
+        <activity
+            android:name=".activity.MusicMainActivity"
+            android:launchMode="singleInstance" />
         <activity android:name=".activity.MusicLibaryActivity" />
 
         <service android:name=".service.MusicService" />

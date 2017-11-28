@@ -1,7 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorPrimary"
+    android:background="@color/transparent"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
     android:paddingTop="5dp">
@@ -10,7 +10,7 @@
         android:id="@+id/item_song"
         android:layout_width="match_parent"
         android:layout_height="57dp"
-        android:background="@color/colorPrimary">
+        android:background="@color/transparent">
 
         <TextView
             android:id="@+id/song_stt"
