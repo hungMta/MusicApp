@@ -24,7 +24,7 @@ public class SongAdapter extends BaseAdapter {
     private static OnItemSonglistner onItemSonglistner;
     public SongAdapter(Context c, ArrayList<Song> theSongs){
         songs=theSongs;
-        songInf=LayoutInflater.from(c);
+        songInf=LayoutInflater.from(c);  
     }
 
     @Override
